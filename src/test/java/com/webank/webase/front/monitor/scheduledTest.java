@@ -19,6 +19,7 @@ import com.webank.webase.front.monitor.entity.Monitor;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BlockNumber;
 import org.fisco.bcos.web3j.protocol.core.methods.response.PbftView;
 import org.fisco.bcos.web3j.protocol.core.methods.response.PendingTxSize;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TotalTransactionCount;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -48,10 +49,12 @@ public class scheduledTest extends TestBase {
             CompletableFuture<BlockNumber> blockHeightFuture = web3j.getBlockNumber().sendAsync();
             CompletableFuture<PbftView> pbftViewFuture = web3j.getPbftView().sendAsync();
             CompletableFuture<PendingTxSize> pendingTxSizeFuture = web3j.getPendingTxSize().sendAsync();
+            CompletableFuture<TotalTransactionCount> totalTransactionCountFuture = web3j.getTotalTransactionCount().sendAsync();
             try {
                 monitor.setBlockHeight(blockHeightFuture.get().getBlockNumber());
                 monitor.setPbftView(pbftViewFuture.get().getPbftView());
                 monitor.setPendingTransactionCount(pendingTxSizeFuture.get().getPendingTxSize());
+                monitor.setTransactionNumber(totalTransactionCountFuture.get().getTotalTransactionCount());
                 monitor.setTimestamp(currentTime);
                 monitor.setGroupId(1);
                 System.out.println(monitor);

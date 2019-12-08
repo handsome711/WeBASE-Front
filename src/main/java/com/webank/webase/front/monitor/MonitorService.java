@@ -25,6 +25,7 @@ import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BlockNumber;
 import org.fisco.bcos.web3j.protocol.core.methods.response.PbftView;
 import org.fisco.bcos.web3j.protocol.core.methods.response.PendingTxSize;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TotalTransactionCount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -70,10 +71,12 @@ public class MonitorService {
         List<BigDecimal> blockHeightValueList = new ArrayList<>();
         List<BigDecimal> pbftViewValueList = new ArrayList<>();
         List<BigDecimal> pendingCountValueList = new ArrayList<>();
+        List<BigDecimal> transactionNumberList = new ArrayList<>();
         for (Monitor monitor : monitorList) {
             blockHeightValueList.add(monitor.getBlockHeight()==null? null: new BigDecimal(monitor.getBlockHeight()));
             pbftViewValueList.add(monitor.getPbftView()==null? null: new BigDecimal(monitor.getPbftView()));
             pendingCountValueList.add(monitor.getPendingTransactionCount()==null? null: new BigDecimal(monitor.getPendingTransactionCount()));
+            transactionNumberList.add(monitor.getTransactionNumber()==null? null: new BigDecimal(monitor.getTransactionNumber()));
             timestampList.add(monitor.getTimestamp());
         }
         monitorList.clear();
@@ -82,10 +85,12 @@ public class MonitorService {
         List<BigDecimal> contrastBlockHeightValueList = new ArrayList<>();
         List<BigDecimal> contrastPbftViewValueList = new ArrayList<>();
         List<BigDecimal> contrastPendingCountValueList = new ArrayList<>();
+        List<BigDecimal> contrastTransactionNumberList = new ArrayList<>();
         for (Monitor monitor : contrastMonitorList) {
             contrastBlockHeightValueList.add(monitor.getBlockHeight()==null? null:new BigDecimal(monitor.getBlockHeight()));
             contrastPbftViewValueList.add(monitor.getPbftView()==null? null: new BigDecimal(monitor.getPbftView()));
             contrastPendingCountValueList.add(monitor.getPendingTransactionCount()==null? null:new BigDecimal(monitor.getPendingTransactionCount()));
+            contrastTransactionNumberList.add(monitor.getTransactionNumber()==null? null:new BigDecimal(monitor.getTransactionNumber()));
             contrastTimestampList.add(monitor.getTimestamp());
         }
         contrastMonitorList.clear();
@@ -93,6 +98,7 @@ public class MonitorService {
         performanceDataList.add(new PerformanceData("blockHeight", new Data(new LineDataList(timestampList, blockHeightValueList), new LineDataList(contrastTimestampList, contrastBlockHeightValueList))));
         performanceDataList.add(new PerformanceData("pbftView", new Data(new LineDataList(null, pbftViewValueList), new LineDataList(null, contrastPbftViewValueList))));
         performanceDataList.add(new PerformanceData("pendingCount", new Data(new LineDataList(null, pendingCountValueList), new LineDataList(null, contrastPendingCountValueList))));
+        performanceDataList.add(new PerformanceData("transactionNumber", new Data(new LineDataList(null, transactionNumberList), new LineDataList(null, contrastTransactionNumberList))));
         return performanceDataList;
     }
 
@@ -147,10 +153,12 @@ public class MonitorService {
             CompletableFuture<BlockNumber> blockHeightFuture = entry.getValue().getBlockNumber().sendAsync();
             CompletableFuture<PbftView> pbftViewFuture = entry.getValue().getPbftView().sendAsync();
             CompletableFuture<PendingTxSize> pendingTxSizeFuture = entry.getValue().getPendingTxSize().sendAsync();
+            CompletableFuture<TotalTransactionCount> totalTransactionCountFuture = entry.getValue().getTotalTransactionCount().sendAsync();
 
             monitor.setBlockHeight(blockHeightFuture.get().getBlockNumber());
             monitor.setPbftView(pbftViewFuture.get().getPbftView());
             monitor.setPendingTransactionCount(pendingTxSizeFuture.get().getPendingTxSize());
+            monitor.setTransactionNumber(totalTransactionCountFuture.get().getTotalTransactionCount());
             monitor.setTimestamp(currentTime);
             monitor.setGroupId(entry.getKey());
             monitorRepository.save(monitor);
