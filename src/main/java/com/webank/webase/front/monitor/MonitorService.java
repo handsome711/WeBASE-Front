@@ -158,7 +158,7 @@ public class MonitorService {
             monitor.setBlockHeight(blockHeightFuture.get().getBlockNumber());
             monitor.setPbftView(pbftViewFuture.get().getPbftView());
             monitor.setPendingTransactionCount(pendingTxSizeFuture.get().getPendingTxSize());
-            monitor.setTransactionNumber(totalTransactionCountFuture.get().getTotalTransactionCount());
+            monitor.setTransactionNumber(totalTransactionCountFuture.get().getTotalTransactionCount().getTxSum());
             monitor.setTimestamp(currentTime);
             monitor.setGroupId(entry.getKey());
             monitorRepository.save(monitor);
