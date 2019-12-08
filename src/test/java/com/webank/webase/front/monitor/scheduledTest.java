@@ -54,7 +54,7 @@ public class scheduledTest extends TestBase {
                 monitor.setBlockHeight(blockHeightFuture.get().getBlockNumber());
                 monitor.setPbftView(pbftViewFuture.get().getPbftView());
                 monitor.setPendingTransactionCount(pendingTxSizeFuture.get().getPendingTxSize());
-                monitor.setTransactionNumber(totalTransactionCountFuture.get().getTotalTransactionCount());
+                monitor.setTransactionNumber(totalTransactionCountFuture.get().getTotalTransactionCount().getTxSum());
                 monitor.setTimestamp(currentTime);
                 monitor.setGroupId(1);
                 System.out.println(monitor);
