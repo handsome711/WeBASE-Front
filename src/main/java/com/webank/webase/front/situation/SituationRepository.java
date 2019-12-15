@@ -29,7 +29,7 @@ public interface SituationRepository extends CrudRepository<Situation, Long> {
     public List<Situation> findByTimeBetween(int groupId, Long startTime, Long endTime);
 
     @Query(value="select s from Situation s where s.groupId = ?1 and s.timestamp = max(s.timestamp)")
-    public Situation findSituationDataNow(int groupId);
+    public List<Situation> findSituationDataNow(int groupId);
 
     @Modifying
     @Transactional

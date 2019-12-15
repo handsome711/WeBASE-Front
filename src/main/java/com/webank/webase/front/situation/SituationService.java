@@ -61,7 +61,7 @@ public class SituationService {
     }
 
     public Situation findSituationDataNow(int groupId) {
-        Situation situation = situationRepository.findSituationDataNow(groupId);
+        List<Situation> situation = situationRepository.findSituationDataNow(groupId);
         return situation;
     }
 
