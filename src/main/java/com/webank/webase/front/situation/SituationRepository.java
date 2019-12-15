@@ -28,7 +28,7 @@ public interface SituationRepository extends CrudRepository<Situation, Long> {
     @Query(value="select s from Situation s where s.groupId = ?1 and s.timestamp between ?2 and ?3 order by s.timestamp")
     public List<Situation> findByTimeBetween(int groupId, Long startTime, Long endTime);
 
-    @Query(value="select s from Situation s where s.groupId = ?1 where s.timestamp = max(s.timestamp)")
+    @Query(value="select s from Situation s where s.groupId = ?1 and s.timestamp = max(s.timestamp)")
     public Situation findSituationDataNow(int groupId);
 
     @Modifying
