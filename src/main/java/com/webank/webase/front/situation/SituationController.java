@@ -16,6 +16,7 @@
 package com.webank.webase.front.situation;
 
 import com.webank.webase.front.performance.result.PerformanceData;
+import com.webank.webase.front.situation.entity.Situation;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -38,24 +39,31 @@ import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/situation")
+//@RequestMapping(value = "/situation")
 public class SituationController {
 
     @Autowired
     private SituationService situationService;
 
-    @ApiOperation(value = "查询链上数据", notes = "查询链上数据")
+    @ApiOperation(value = "查询态势图", notes = "查询态势图")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "beginDate", value = "开始时间"),
             @ApiImplicitParam(name = "endDate", value = "结束时间"),
             @ApiImplicitParam(name = "gap", value = "时间间隔", dataType = "int")
     })
-    @GetMapping
+    @GetMapping("/situation")
     public List<PerformanceData> getChainSituation(@RequestParam(required= false) @DateTimeFormat(iso=DATE_TIME) LocalDateTime beginDate,
-                                                 @RequestParam(required= false) @DateTimeFormat(iso=DATE_TIME) LocalDateTime endDate,
-                                                 @RequestParam(required = false, defaultValue = "1") int gap,
-                                                 @RequestParam(defaultValue = "1") int groupId)   {
-        List<PerformanceData> performanceList = situationService.findContrastDataByTime(groupId, beginDate,endDate, gap);
+                                                   @RequestParam(required= false) @DateTimeFormat(iso=DATE_TIME) LocalDateTime endDate,
+                                                   @RequestParam(required = false, defaultValue = "1") int gap,
+                                                   @RequestParam(defaultValue = "1") int groupId)   {
+        List<PerformanceData> performanceList = situationService.findSituationDataByTime(groupId, beginDate,endDate, gap);
         return performanceList;
+    }
+
+    @ApiOperation(value = "查询实时态势图", notes = "查询实时态势图")
+    @GetMapping("/situationNow")
+    public Situation getChainSituationNow(@RequestParam(defaultValue = "1") int groupId)   {
+        Situation situation = situationService.findSituationDataNow(groupId);
+        return situation;
     }
 }

@@ -28,6 +28,9 @@ public interface SituationRepository extends CrudRepository<Situation, Long> {
     @Query(value="select s from Situation s where s.groupId = ?1 and s.timestamp between ?2 and ?3 order by s.timestamp")
     public List<Situation> findByTimeBetween(int groupId, Long startTime, Long endTime);
 
+    @Query(value="select s from Situation s where s.groupId = ?1 order by s.timestamp limit 1")
+    public Situation findSituationDataNow(int groupId);
+
     @Modifying
     @Transactional
     @Query(value="delete from Situation s where s.timestamp< ?1",nativeQuery = true)

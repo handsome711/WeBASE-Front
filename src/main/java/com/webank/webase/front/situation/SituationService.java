@@ -22,10 +22,6 @@ import com.webank.webase.front.performance.result.PerformanceData;
 import com.webank.webase.front.situation.entity.Situation;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BlockNumber;
-import org.fisco.bcos.web3j.protocol.core.methods.response.PbftView;
-import org.fisco.bcos.web3j.protocol.core.methods.response.PendingTxSize;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TotalTransactionCount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -52,7 +48,7 @@ public class SituationService {
     @Autowired
     SituationRepository situationRepository;
 
-    public List<PerformanceData> findContrastDataByTime(int groupId, LocalDateTime startTime, LocalDateTime endTime, int gap)  {
+    public List<PerformanceData> findSituationDataByTime(int groupId, LocalDateTime startTime, LocalDateTime endTime, int gap)  {
 
         List<Situation> situationList;
         if (startTime == null || endTime == null) {
@@ -64,6 +60,11 @@ public class SituationService {
 
     }
 
+    public Situation findSituationDataNow(int groupId) {
+        Situation situation = situationRepository.findSituationDataNow(groupId);
+        return situation;
+    }
+
     private List<PerformanceData> transferToPerformanceData(List<Situation> situationList) {
         List<Long> timestampList = new ArrayList<>();
         List<BigDecimal> txPoolList = new ArrayList<>();
@@ -73,13 +74,6 @@ public class SituationService {
         List<BigDecimal> blockChainList = new ArrayList<>();
         List<BigDecimal> blockVerifierList = new ArrayList<>();
         for (Situation situation : situationList) {
-            situation.setTxPool((int)(Math.random()*101));
-            situation.setSealer((int)(Math.random()*101));
-            situation.setConsensusEngineBlock((int)(Math.random()*101));
-            situation.setConsensusEngineCommonView((int)(Math.random()*101));
-            situation.setBlockChain((int)(Math.random()*101));
-            situation.setBlockVerifier((int)(Math.random()*101));
-            
             txPoolList.add(new BigDecimal(situation.getTxPool()));
             sealerList.add(new BigDecimal(situation.getSealer()));
             consensusEngineBlockList.add(new BigDecimal(situation.getConsensusEngineBlock()));
@@ -99,6 +93,15 @@ public class SituationService {
         performanceDataList.add(new PerformanceData("blockChain", new Data(new LineDataList(null, blockChainList), new LineDataList(null, blockChainList))));
         performanceDataList.add(new PerformanceData("blockVerifier", new Data(new LineDataList(null, blockVerifierList), new LineDataList(null, blockVerifierList))));
         return performanceDataList;
+    }
+
+    public void randValue(Situation situation) {
+        situation.setTxPool((int)(Math.random()*101));
+        situation.setSealer((int)(Math.random()*101));
+        situation.setConsensusEngineBlock((int)(Math.random()*101));
+        situation.setConsensusEngineCommonView((int)(Math.random()*101));
+        situation.setBlockChain((int)(Math.random()*101));
+        situation.setBlockVerifier((int)(Math.random()*101));
     }
 
     public List transferListByGap(List arrayList, int gap)  {
@@ -150,13 +153,8 @@ public class SituationService {
         for(Map.Entry<Integer,Web3j> entry : web3jMap.entrySet()) {
             Situation situation = new Situation();
 
-            situation.setTxPool((int)(Math.random()*101));
-            situation.setSealer((int)(Math.random()*101));
-            situation.setConsensusEngineBlock((int)(Math.random()*101));
-            situation.setConsensusEngineCommonView((int)(Math.random()*101));
-            situation.setBlockChain((int)(Math.random()*101));
-            situation.setBlockVerifier((int)(Math.random()*101));
-            
+            randValue(situation);
+
             situation.setTimestamp(currentTime);
             situation.setGroupId(entry.getKey());
             situationRepository.save(situation);
