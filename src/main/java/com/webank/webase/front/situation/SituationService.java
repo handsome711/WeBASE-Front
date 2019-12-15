@@ -60,7 +60,7 @@ public class SituationService {
 
     }
 
-    public Situation findSituationDataNow(int groupId) {
+    public List<Situation> findSituationDataNow(int groupId) {
         List<Situation> situation = situationRepository.findSituationDataNow(groupId);
         return situation;
     }
