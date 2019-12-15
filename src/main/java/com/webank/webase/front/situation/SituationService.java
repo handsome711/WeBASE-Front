@@ -60,9 +60,9 @@ public class SituationService {
 
     }
 
-    public List<Situation> findSituationDataNow(int groupId) {
-        List<Situation> situation = situationRepository.findSituationDataNow(groupId);
-        return situation;
+    public Situation findSituationDataNow(int groupId) {
+        List<Situation> situations = situationRepository.findSituationDataNow(groupId);
+        return (situations != null)? situations.get(0): new Situation();
     }
 
     private List<PerformanceData> transferToPerformanceData(List<Situation> situationList) {
