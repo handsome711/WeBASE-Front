@@ -18,10 +18,12 @@ package com.webank.webase.front.performance;
 import com.webank.webase.front.base.properties.Constants;
 import com.webank.webase.front.base.exception.FrontException;
 import com.webank.webase.front.performance.entity.Performance;
+import com.webank.webase.front.performance.entity.ProcessInfo;
 import com.webank.webase.front.performance.result.Data;
 import com.webank.webase.front.performance.result.LineDataList;
 import com.webank.webase.front.performance.result.PerformanceData;
 import lombok.extern.slf4j.Slf4j;
+import org.hyperic.sigar.cmd.Ps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -366,6 +368,35 @@ public class PerformanceService {
             }
         }
         return newPerformanceList;
+    }
+
+    public List<ProcessInfo> getProcessPerformanceRatio() {
+        Ps ps = new Ps();
+        List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
+        try {
+            long[] pids = sigar.getProcList();
+            for(long pid : pids){
+                List<String> list = ps.getInfo(sigar, pid);
+                ProcessInfo info = new ProcessInfo();
+                for(int i = 0; i <= list.size(); i++){
+                    switch(i){
+                        case 0 : info.setPid(list.get(0)); break;
+                        case 1 : info.setUser(list.get(1)); break;
+                        case 2 : info.setStartTime(list.get(2)); break;
+                        case 3 : info.setMemSize(list.get(3)); break;
+                        case 4 : info.setMemUse(list.get(4)); break;
+                        case 5 : info.setMemhare(list.get(5)); break;
+                        case 6 : info.setState(list.get(6)); break;
+                        case 7 : info.setCpuTime(list.get(7)); break;
+                        case 8 : info.setName(list.get(8)); break;
+                    }
+                }
+                processInfos.add(info);
+            }
+        } catch (SigarException e) {
+            e.printStackTrace();
+        }
+        return processInfos;
     }
 }
 

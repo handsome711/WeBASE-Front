@@ -20,6 +20,7 @@ import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME
 import com.webank.webase.front.base.response.BaseResponse;
 import com.webank.webase.front.base.code.ConstantCode;
 import com.webank.webase.front.base.exception.FrontException;
+import com.webank.webase.front.performance.entity.ProcessInfo;
 import com.webank.webase.front.performance.entity.ToggleHandle;
 import com.webank.webase.front.performance.result.PerformanceData;
 import io.swagger.annotations.ApiImplicitParam;
@@ -104,6 +105,40 @@ public class PerformanceController {
         }catch (FrontException e){
             return new BaseResponse(ConstantCode.SYSTEM_ERROR, e.getMessage());
         }
-
     }
+
+    @GetMapping(value = "/process")
+    public List<ProcessInfo> test() {
+        return performanceService.getProcessPerformanceRatio();
+    }
+//    /**
+//     * query performance data.
+//     *
+//     * @param beginDate beginDate
+//     * @param endDate endDate
+//     * @param contrastBeginDate contrastBeginDate
+//     * @param contrastEndDate contrastEndDate
+//     * @param gap gap
+//     * @return
+//     */
+//    @ApiOperation(value = "query performance data", notes = "query performance data")
+//    @ApiImplicitParams({@ApiImplicitParam(name = "beginDate", value = "start time"),
+//            @ApiImplicitParam(name = "endDate", value = "end time"),
+//            @ApiImplicitParam(name = "contrastBeginDate", value = "compare start time"),
+//            @ApiImplicitParam(name = "contrastEndDate", value = "compare end time"),
+//            @ApiImplicitParam(name = "gap", value = "time gap", dataType = "int")})
+//    @GetMapping(value = "/process")
+//    public List<PerformanceData> getProcessPerformanceRatio(
+//            @RequestParam(required = false) @DateTimeFormat(
+//                    iso = DATE_TIME) LocalDateTime beginDate,
+//            @RequestParam(required = false) @DateTimeFormat(iso = DATE_TIME) LocalDateTime endDate,
+//            @RequestParam(required = false) @DateTimeFormat(
+//                    iso = DATE_TIME) LocalDateTime contrastBeginDate,
+//            @RequestParam(required = false) @DateTimeFormat(
+//                    iso = DATE_TIME) LocalDateTime contrastEndDate,
+//            @RequestParam(required = false, defaultValue = "1") int gap) throws Exception {
+//        List<PerformanceData> performanceList = performanceService.findContrastDataByTime(beginDate,
+//                endDate, contrastBeginDate, contrastEndDate, gap);
+//        return performanceList;
+//    }
 }
