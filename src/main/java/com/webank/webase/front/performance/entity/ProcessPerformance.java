@@ -25,17 +25,17 @@ import java.math.BigDecimal;
 
 @Entity
 @Data
-public class ProcessPerformance extends Performance{
+public class ProcessPerformance{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String processName;
     private BigDecimal cpuUseRatio;
-    private BigDecimal diskUseRatio;
+//    private BigDecimal diskUseRatio;
     private BigDecimal memoryUseRatio;
     // download bps(bit per second)
-    private BigDecimal rxbps;
+//    private BigDecimal rxbps;
     // upload bps(bit per second)
-    private BigDecimal txbps;
+//    private BigDecimal txbps;
     private Long timestamp;
 }

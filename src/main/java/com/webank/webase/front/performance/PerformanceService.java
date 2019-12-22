@@ -392,7 +392,7 @@ public class PerformanceService {
                     contrastStartTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
                     contrastEndTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         }
-        return transferToPerformanceData(transferListByGap(performanceList, gap),
+        return processTransferToPerformanceData(transferListByGap(performanceList, gap),
                 transferListByGap(contrastPerformanceList, gap));
 
     }
@@ -462,34 +462,59 @@ public class PerformanceService {
     }
 
 
-//    public List<ProcessInfo> getProcessPerformanceRatio() {
-//        Ps ps = new Ps();
-//        List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
-//        try {
-//            long[] pids = sigar.getProcList();
-//            for(long pid : pids){
-//                List<String> list = ps.getInfo(sigar, pid);
-//                ProcessInfo info = new ProcessInfo();
-//                for(int i = 0; i <= list.size(); i++){
-//                    switch(i){
-//                        case 0 : info.setPid(list.get(0)); break;
-//                        case 1 : info.setUser(list.get(1)); break;
-//                        case 2 : info.setStartTime(list.get(2)); break;
-//                        case 3 : info.setMemSize(list.get(3)); break;
-//                        case 4 : info.setMemUse(list.get(4)); break;
-//                        case 5 : info.setMemhare(list.get(5)); break;
-//                        case 6 : info.setState(list.get(6)); break;
-//                        case 7 : info.setCpuTime(list.get(7)); break;
-//                        case 8 : info.setName(list.get(8)); break;
-//                    }
-//                }
-//                processInfos.add(info);
-//            }
-//        } catch (SigarException e) {
-//            e.printStackTrace();
-//        }
-//        return processInfos;
-//    }
+
+    private List<PerformanceData> processTransferToPerformanceData(List<ProcessPerformance> performanceList,
+                                                                   List<ProcessPerformance> contrastPerformanceList) {
+        List<Long> timestampList = new ArrayList<>();
+        List<BigDecimal> memoryValueList = new ArrayList<>();
+        List<BigDecimal> cpuValueList = new ArrayList<>();
+//        List<BigDecimal> diskValueList = new ArrayList<>();
+//        List<BigDecimal> rxbpsValueList = new ArrayList<>();
+//        List<BigDecimal> txbpsValueList = new ArrayList<>();
+        for (ProcessPerformance processPerformance : performanceList) {
+            cpuValueList.add(processPerformance.getCpuUseRatio());
+            memoryValueList.add(processPerformance.getMemoryUseRatio());
+//            diskValueList.add(processPerformance.getDiskUseRatio());
+            timestampList.add(processPerformance.getTimestamp());
+//            rxbpsValueList.add(processPerformance.getRxbps());
+//            txbpsValueList.add(processPerformance.getTxbps());
+        }
+        performanceList.clear();
+
+        List<Long> contrastTimestampList = new ArrayList<>();
+        List<BigDecimal> contrastMemoryValueList = new ArrayList<>();
+        List<BigDecimal> contrastCpuValueList = new ArrayList<>();
+//        List<BigDecimal> contrastDiskValueList = new ArrayList<>();
+//        List<BigDecimal> contrastRxbpsValueList = new ArrayList<>();
+//        List<BigDecimal> contrastTxbpsValueList = new ArrayList<>();
+        for (ProcessPerformance processPerformance : contrastPerformanceList) {
+            contrastCpuValueList.add(processPerformance.getCpuUseRatio());
+            contrastMemoryValueList.add(processPerformance.getMemoryUseRatio());
+//            contrastDiskValueList.add(processPerformance.getDiskUseRatio());
+//            contrastRxbpsValueList.add(processPerformance.getRxbps());
+//            contrastTxbpsValueList.add(processPerformance.getTxbps());
+            contrastTimestampList.add(processPerformance.getTimestamp());
+        }
+        contrastPerformanceList.clear();
+        List<PerformanceData> performanceDataList = new ArrayList<>();
+        performanceDataList.add(
+                new PerformanceData("cpu", new Data(new LineDataList(timestampList, cpuValueList),
+                        new LineDataList(contrastTimestampList, contrastCpuValueList))));
+        performanceDataList
+                .add(new PerformanceData("memory", new Data(new LineDataList(null, memoryValueList),
+                        new LineDataList(null, contrastMemoryValueList))));
+//        performanceDataList
+//                .add(new PerformanceData("disk", new Data(new LineDataList(null, diskValueList),
+//                        new LineDataList(null, contrastDiskValueList))));
+//        performanceDataList
+//                .add(new PerformanceData(TXBPS, new Data(new LineDataList(null, txbpsValueList),
+//                        new LineDataList(null, contrastTxbpsValueList))));
+//        performanceDataList
+//                .add(new PerformanceData(RXBPS, new Data(new LineDataList(null, rxbpsValueList),
+//                        new LineDataList(null, contrastRxbpsValueList))));
+        return performanceDataList;
+    }
+
 }
 
 
