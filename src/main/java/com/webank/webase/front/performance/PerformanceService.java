@@ -18,11 +18,12 @@ package com.webank.webase.front.performance;
 import com.webank.webase.front.base.properties.Constants;
 import com.webank.webase.front.base.exception.FrontException;
 import com.webank.webase.front.performance.entity.Performance;
-import com.webank.webase.front.performance.entity.ProcessInfo;
+import com.webank.webase.front.performance.entity.ProcessPerformance;
 import com.webank.webase.front.performance.result.Data;
 import com.webank.webase.front.performance.result.LineDataList;
 import com.webank.webase.front.performance.result.PerformanceData;
 import lombok.extern.slf4j.Slf4j;
+import org.hyperic.sigar.*;
 import org.hyperic.sigar.cmd.Ps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,15 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hyperic.sigar.CpuInfo;
-import org.hyperic.sigar.CpuPerc;
-import org.hyperic.sigar.FileSystem;
-import org.hyperic.sigar.Mem;
-import org.hyperic.sigar.NetInterfaceConfig;
-import org.hyperic.sigar.NetInterfaceStat;
-import org.hyperic.sigar.Sigar;
-import org.hyperic.sigar.SigarException;
-
 /**
  * Host monitor: monitor computer's performance
  * such as cpu, memory, disk etc.
@@ -57,6 +49,8 @@ public class PerformanceService {
 
     @Autowired
     private PerformanceRepository performanceRepository;
+    @Autowired
+    private ProcessPerformanceRepository processPerformanceRepository;
     @Autowired
     private Constants constants;
     // host upload bps(bit per second)
@@ -370,34 +364,132 @@ public class PerformanceService {
         return newPerformanceList;
     }
 
-    public List<ProcessInfo> getProcessPerformanceRatio() {
+    /**
+     * findContrastDataByTime.
+     *
+     * @param startTime startTime
+     * @param endTime endTime
+     * @param contrastStartTime contrastStartTime
+     * @param contrastEndTime contrastEndTime
+     * @param gap gap
+     * @return
+     */
+    public List<PerformanceData> findProcessContrastDataByTime(LocalDateTime startTime,
+                                                               LocalDateTime endTime, LocalDateTime contrastStartTime, LocalDateTime contrastEndTime,
+                                                               int gap)  {
+
+        List<ProcessPerformance> performanceList;
+        if (startTime == null || endTime == null) {
+            performanceList = new ArrayList<>();
+        } else {
+            performanceList = processPerformanceRepository.findByTimeBetween(
+                    startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                    endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        }
+        List<ProcessPerformance> contrastPerformanceList = new ArrayList<>();
+        if (contrastStartTime != null && contrastEndTime != null) {
+            contrastPerformanceList = processPerformanceRepository.findByTimeBetween(
+                    contrastStartTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                    contrastEndTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        }
+        return transferToPerformanceData(transferListByGap(performanceList, gap),
+                transferListByGap(contrastPerformanceList, gap));
+
+    }
+
+    /**
+     * syncPerformanceInfo per 5s
+     */
+    @Scheduled(cron = "0/5 * * * * ?")
+    public void syncProcessPerformanceInfo() throws SigarException {
+        log.debug("begin sync performance");
+        if (!constants.isMonitorEnabled())
+        {
+            return;
+        }
+        ProcessPerformance processPerformance = new ProcessPerformance();
+
         Ps ps = new Ps();
-        List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
         try {
             long[] pids = sigar.getProcList();
             for(long pid : pids){
                 List<String> list = ps.getInfo(sigar, pid);
-                ProcessInfo info = new ProcessInfo();
-                for(int i = 0; i <= list.size(); i++){
-                    switch(i){
-                        case 0 : info.setPid(list.get(0)); break;
-                        case 1 : info.setUser(list.get(1)); break;
-                        case 2 : info.setStartTime(list.get(2)); break;
-                        case 3 : info.setMemSize(list.get(3)); break;
-                        case 4 : info.setMemUse(list.get(4)); break;
-                        case 5 : info.setMemhare(list.get(5)); break;
-                        case 6 : info.setState(list.get(6)); break;
-                        case 7 : info.setCpuTime(list.get(7)); break;
-                        case 8 : info.setName(list.get(8)); break;
-                    }
+                String[] splitProcessName = list.get(8).split("/");
+                if (splitProcessName[splitProcessName.length - 1].equals("fisco-bcos")){
+                    ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
+                    processPerformance.setCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
+                    ProcMem procMem = sigar.getProcMem(pid);
+                    processPerformance.setCpuUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
+                    Long currentTime = System.currentTimeMillis();
+                    processPerformance.setTimestamp(currentTime);
+                    processPerformanceRepository.save(processPerformance);
+                    log.debug("insert success =  " + processPerformance.getId());
+                    return;
                 }
-                processInfos.add(info);
+//                    case 0 : info.setPid(list.get(0)); break;
+//                    case 1 : info.setUser(list.get(1)); break;
+//                    case 2 : info.setStartTime(list.get(2)); break;
+//                    case 3 : info.setMemSize(list.get(3)); break;
+//                    case 4 : info.setMemUse(list.get(4)); break;
+//                    case 5 : info.setMemhare(list.get(5)); break;
+//                    case 6 : info.setState(list.get(6)); break;
+//                    case 7 : info.setCpuTime(list.get(7)); break;
+//                    case 8 : info.setName(list.get(8)); break;
             }
+            log.debug("insert error, can not find process");
+            return;
         } catch (SigarException e) {
             e.printStackTrace();
         }
-        return processInfos;
+
     }
+
+
+    /**
+     * deletePerformanceInfoPerWeek at 00:00:00 per week
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deleteProcessPerformanceInfoPerWeek() throws SigarException {
+        log.debug("begin delete performance");
+        if (!constants.isMonitorEnabled())
+        {
+            return;
+        }
+        Long currentTime = System.currentTimeMillis();
+        Long weekAgo = currentTime - 3600 * 24 * 7 * 1000;
+        int i = processPerformanceRepository.deleteTimeAgo(weekAgo);
+        log.debug("delete record count = " + i);
+    }
+
+
+//    public List<ProcessInfo> getProcessPerformanceRatio() {
+//        Ps ps = new Ps();
+//        List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
+//        try {
+//            long[] pids = sigar.getProcList();
+//            for(long pid : pids){
+//                List<String> list = ps.getInfo(sigar, pid);
+//                ProcessInfo info = new ProcessInfo();
+//                for(int i = 0; i <= list.size(); i++){
+//                    switch(i){
+//                        case 0 : info.setPid(list.get(0)); break;
+//                        case 1 : info.setUser(list.get(1)); break;
+//                        case 2 : info.setStartTime(list.get(2)); break;
+//                        case 3 : info.setMemSize(list.get(3)); break;
+//                        case 4 : info.setMemUse(list.get(4)); break;
+//                        case 5 : info.setMemhare(list.get(5)); break;
+//                        case 6 : info.setState(list.get(6)); break;
+//                        case 7 : info.setCpuTime(list.get(7)); break;
+//                        case 8 : info.setName(list.get(8)); break;
+//                    }
+//                }
+//                processInfos.add(info);
+//            }
+//        } catch (SigarException e) {
+//            e.printStackTrace();
+//        }
+//        return processInfos;
+//    }
 }
 
 

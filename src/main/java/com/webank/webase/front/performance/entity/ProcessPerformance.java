@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Data
-public class ProcessPerformance {
+public class ProcessPerformance extends Performance{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
