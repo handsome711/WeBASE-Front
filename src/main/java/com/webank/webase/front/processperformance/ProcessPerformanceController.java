@@ -35,7 +35,7 @@ import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME
  */
 
 @RestController
-@RequestMapping(value = "/processperformance")
+@RequestMapping(value = "/process")
 public class ProcessPerformanceController {
 
     @Autowired

@@ -105,35 +105,4 @@ public class PerformanceController {
             return new BaseResponse(ConstantCode.SYSTEM_ERROR, e.getMessage());
         }
     }
-
-    /**
-     * query findProcessContrastDataByTime data.
-     *
-     * @param beginDate beginDate
-     * @param endDate endDate
-     * @param contrastBeginDate contrastBeginDate
-     * @param contrastEndDate contrastEndDate
-     * @param gap gap
-     * @return
-     */
-    @ApiOperation(value = "query process performance data", notes = "query process performance data")
-    @ApiImplicitParams({@ApiImplicitParam(name = "beginDate", value = "start time"),
-            @ApiImplicitParam(name = "endDate", value = "end time"),
-            @ApiImplicitParam(name = "contrastBeginDate", value = "compare start time"),
-            @ApiImplicitParam(name = "contrastEndDate", value = "compare end time"),
-            @ApiImplicitParam(name = "gap", value = "time gap", dataType = "int")})
-    @GetMapping(value = "/process")
-    public List<PerformanceData> getProcessPerformanceRatio(
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = DATE_TIME) LocalDateTime beginDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = DATE_TIME) LocalDateTime contrastBeginDate,
-            @RequestParam(required = false) @DateTimeFormat(
-                    iso = DATE_TIME) LocalDateTime contrastEndDate,
-            @RequestParam(required = false, defaultValue = "1") int gap) throws Exception {
-        List<PerformanceData> performanceList = performanceService.findProcessContrastDataByTime(beginDate,
-                endDate, contrastBeginDate, contrastEndDate, gap);
-        return performanceList;
-    }
 }
