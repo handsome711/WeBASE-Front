@@ -232,7 +232,9 @@ public class PerformanceService {
                     performance.setProcessCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
                     ProcMem procMem = sigar.getProcMem(pid);
                     performance.setProcessMemoryUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
-                    break;
+                    performanceRepository.save(performance);
+                    log.debug("insert success =  " + performance.getId());
+                    return;
                 }
 //                    case 0 : info.setPid(list.get(0)); break;
 //                    case 1 : info.setUser(list.get(1)); break;
@@ -249,9 +251,6 @@ public class PerformanceService {
         } catch (SigarException e) {
             log.error("get process performance failed.",e);
         }
-
-        performanceRepository.save(performance);
-        log.debug("insert success =  " + performance.getId());
     }
 
     /**
