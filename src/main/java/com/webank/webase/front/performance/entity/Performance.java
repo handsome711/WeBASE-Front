@@ -31,6 +31,8 @@ public class Performance {
     private BigDecimal cpuUseRatio;
     private BigDecimal diskUseRatio;
     private BigDecimal memoryUseRatio;
+    private BigDecimal processCpuUseRatio;
+    private BigDecimal processMemoryUseRatio;
     // download bps(bit per second)
     private BigDecimal rxbps;
     // upload bps(bit per second)
