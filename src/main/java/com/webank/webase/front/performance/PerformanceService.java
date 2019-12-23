@@ -18,7 +18,6 @@ package com.webank.webase.front.performance;
 import com.webank.webase.front.base.properties.Constants;
 import com.webank.webase.front.base.exception.FrontException;
 import com.webank.webase.front.performance.entity.Performance;
-import com.webank.webase.front.performance.entity.ProcessPerformance;
 import com.webank.webase.front.performance.result.Data;
 import com.webank.webase.front.performance.result.LineDataList;
 import com.webank.webase.front.performance.result.PerformanceData;
@@ -49,8 +48,6 @@ public class PerformanceService {
 
     @Autowired
     private PerformanceRepository performanceRepository;
-    @Autowired
-    private ProcessPerformanceRepository processPerformanceRepository;
     @Autowired
     private Constants constants;
     // host upload bps(bit per second)
@@ -362,157 +359,6 @@ public class PerformanceService {
             }
         }
         return newPerformanceList;
-    }
-
-    /**
-     * findContrastDataByTime.
-     *
-     * @param startTime startTime
-     * @param endTime endTime
-     * @param contrastStartTime contrastStartTime
-     * @param contrastEndTime contrastEndTime
-     * @param gap gap
-     * @return
-     */
-    public List<PerformanceData> findProcessContrastDataByTime(LocalDateTime startTime,
-                                                               LocalDateTime endTime, LocalDateTime contrastStartTime, LocalDateTime contrastEndTime,
-                                                               int gap)  {
-
-        List<ProcessPerformance> performanceList;
-        if (startTime == null || endTime == null) {
-            performanceList = new ArrayList<>();
-        } else {
-            performanceList = processPerformanceRepository.findByTimeBetween(
-                    startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                    endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-        }
-        List<ProcessPerformance> contrastPerformanceList = new ArrayList<>();
-        if (contrastStartTime != null && contrastEndTime != null) {
-            contrastPerformanceList = processPerformanceRepository.findByTimeBetween(
-                    contrastStartTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                    contrastEndTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-        }
-        return processTransferToPerformanceData(transferListByGap(performanceList, gap),
-                transferListByGap(contrastPerformanceList, gap));
-
-    }
-
-    /**
-     * syncPerformanceInfo per 5s
-     */
-    @Scheduled(cron = "0/5 * * * * ?")
-    public void syncProcessPerformanceInfo() throws SigarException {
-        log.debug("begin sync performance");
-        if (!constants.isMonitorEnabled())
-        {
-            return;
-        }
-        ProcessPerformance processPerformance = new ProcessPerformance();
-
-        Ps ps = new Ps();
-        try {
-            long[] pids = sigar.getProcList();
-            for(long pid : pids){
-                List<String> list = ps.getInfo(sigar, pid);
-                String[] splitProcessName = list.get(8).split("/");
-                if (splitProcessName[splitProcessName.length - 1].equals("fisco-bcos")){
-                    ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
-                    processPerformance.setCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
-                    ProcMem procMem = sigar.getProcMem(pid);
-                    processPerformance.setCpuUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
-                    Long currentTime = System.currentTimeMillis();
-                    processPerformance.setTimestamp(currentTime);
-                    processPerformanceRepository.save(processPerformance);
-                    log.debug("insert success =  " + processPerformance.getId());
-                    return;
-                }
-//                    case 0 : info.setPid(list.get(0)); break;
-//                    case 1 : info.setUser(list.get(1)); break;
-//                    case 2 : info.setStartTime(list.get(2)); break;
-//                    case 3 : info.setMemSize(list.get(3)); break;
-//                    case 4 : info.setMemUse(list.get(4)); break;
-//                    case 5 : info.setMemhare(list.get(5)); break;
-//                    case 6 : info.setState(list.get(6)); break;
-//                    case 7 : info.setCpuTime(list.get(7)); break;
-//                    case 8 : info.setName(list.get(8)); break;
-            }
-            log.debug("insert error, can not find process");
-            return;
-        } catch (SigarException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
-    /**
-     * deletePerformanceInfoPerWeek at 00:00:00 per week
-     */
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void deleteProcessPerformanceInfoPerWeek() throws SigarException {
-        log.debug("begin delete performance");
-        if (!constants.isMonitorEnabled())
-        {
-            return;
-        }
-        Long currentTime = System.currentTimeMillis();
-        Long weekAgo = currentTime - 3600 * 24 * 7 * 1000;
-        int i = processPerformanceRepository.deleteTimeAgo(weekAgo);
-        log.debug("delete record count = " + i);
-    }
-
-
-
-    private List<PerformanceData> processTransferToPerformanceData(List<ProcessPerformance> performanceList,
-                                                                   List<ProcessPerformance> contrastPerformanceList) {
-        List<Long> timestampList = new ArrayList<>();
-        List<BigDecimal> memoryValueList = new ArrayList<>();
-        List<BigDecimal> cpuValueList = new ArrayList<>();
-//        List<BigDecimal> diskValueList = new ArrayList<>();
-//        List<BigDecimal> rxbpsValueList = new ArrayList<>();
-//        List<BigDecimal> txbpsValueList = new ArrayList<>();
-        for (ProcessPerformance processPerformance : performanceList) {
-            cpuValueList.add(processPerformance.getCpuUseRatio());
-            memoryValueList.add(processPerformance.getMemoryUseRatio());
-//            diskValueList.add(processPerformance.getDiskUseRatio());
-            timestampList.add(processPerformance.getTimestamp());
-//            rxbpsValueList.add(processPerformance.getRxbps());
-//            txbpsValueList.add(processPerformance.getTxbps());
-        }
-        performanceList.clear();
-
-        List<Long> contrastTimestampList = new ArrayList<>();
-        List<BigDecimal> contrastMemoryValueList = new ArrayList<>();
-        List<BigDecimal> contrastCpuValueList = new ArrayList<>();
-//        List<BigDecimal> contrastDiskValueList = new ArrayList<>();
-//        List<BigDecimal> contrastRxbpsValueList = new ArrayList<>();
-//        List<BigDecimal> contrastTxbpsValueList = new ArrayList<>();
-        for (ProcessPerformance processPerformance : contrastPerformanceList) {
-            contrastCpuValueList.add(processPerformance.getCpuUseRatio());
-            contrastMemoryValueList.add(processPerformance.getMemoryUseRatio());
-//            contrastDiskValueList.add(processPerformance.getDiskUseRatio());
-//            contrastRxbpsValueList.add(processPerformance.getRxbps());
-//            contrastTxbpsValueList.add(processPerformance.getTxbps());
-            contrastTimestampList.add(processPerformance.getTimestamp());
-        }
-        contrastPerformanceList.clear();
-        List<PerformanceData> performanceDataList = new ArrayList<>();
-        performanceDataList.add(
-                new PerformanceData("cpu", new Data(new LineDataList(timestampList, cpuValueList),
-                        new LineDataList(contrastTimestampList, contrastCpuValueList))));
-        performanceDataList
-                .add(new PerformanceData("memory", new Data(new LineDataList(null, memoryValueList),
-                        new LineDataList(null, contrastMemoryValueList))));
-//        performanceDataList
-//                .add(new PerformanceData("disk", new Data(new LineDataList(null, diskValueList),
-//                        new LineDataList(null, contrastDiskValueList))));
-//        performanceDataList
-//                .add(new PerformanceData(TXBPS, new Data(new LineDataList(null, txbpsValueList),
-//                        new LineDataList(null, contrastTxbpsValueList))));
-//        performanceDataList
-//                .add(new PerformanceData(RXBPS, new Data(new LineDataList(null, rxbpsValueList),
-//                        new LineDataList(null, contrastRxbpsValueList))));
-        return performanceDataList;
     }
 
 }

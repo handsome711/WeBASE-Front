@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.front.performance.entity;
+package com.webank.webase.front.processperformance.entity;
 
 import lombok.Data;
 
@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Data
-public class ProcessPerformance{
+public class ProcessPerformance {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

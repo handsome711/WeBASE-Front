@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.front.performance;
-
-import com.webank.webase.front.performance.entity.ProcessPerformance;
+package com.webank.webase.front.processperformance;
+import com.webank.webase.front.processperformance.entity.ProcessPerformance;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
