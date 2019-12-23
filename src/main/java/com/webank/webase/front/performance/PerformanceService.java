@@ -18,10 +18,10 @@ package com.webank.webase.front.performance;
 import com.webank.webase.front.base.properties.Constants;
 import com.webank.webase.front.base.exception.FrontException;
 import com.webank.webase.front.performance.entity.Performance;
+import com.webank.webase.front.performance.entity.ProcessInfo;
 import com.webank.webase.front.performance.result.Data;
 import com.webank.webase.front.performance.result.LineDataList;
 import com.webank.webase.front.performance.result.PerformanceData;
-import com.webank.webase.front.processperformance.entity.ProcessPerformance;
 import lombok.extern.slf4j.Slf4j;
 import org.hyperic.sigar.*;
 import org.hyperic.sigar.cmd.Ps;
@@ -112,9 +112,6 @@ public class PerformanceService {
         List<BigDecimal> diskValueList = new ArrayList<>();
         List<BigDecimal> rxbpsValueList = new ArrayList<>();
         List<BigDecimal> txbpsValueList = new ArrayList<>();
-
-        List<BigDecimal> processCpuValueList = new ArrayList<>();
-        List<BigDecimal> processMemoryValueList = new ArrayList<>();
         for (Performance performance : performanceList) {
             cpuValueList.add(performance.getCpuUseRatio());
             memoryValueList.add(performance.getMemoryUseRatio());
@@ -122,9 +119,6 @@ public class PerformanceService {
             timestampList.add(performance.getTimestamp());
             rxbpsValueList.add(performance.getRxbps());
             txbpsValueList.add(performance.getTxbps());
-
-            processCpuValueList.add(performance.getProcessCpuUseRatio());
-            processMemoryValueList.add(performance.getProcessMemoryUseRatio());
         }
         performanceList.clear();
 
@@ -134,9 +128,6 @@ public class PerformanceService {
         List<BigDecimal> contrastDiskValueList = new ArrayList<>();
         List<BigDecimal> contrastRxbpsValueList = new ArrayList<>();
         List<BigDecimal> contrastTxbpsValueList = new ArrayList<>();
-
-        List<BigDecimal> contrastProcessCpuValueList = new ArrayList<>();
-        List<BigDecimal> contrastProcessMemoryValueList = new ArrayList<>();
         for (Performance performance : contrastPerformanceList) {
             contrastCpuValueList.add(performance.getCpuUseRatio());
             contrastMemoryValueList.add(performance.getMemoryUseRatio());
@@ -144,9 +135,6 @@ public class PerformanceService {
             contrastRxbpsValueList.add(performance.getRxbps());
             contrastTxbpsValueList.add(performance.getTxbps());
             contrastTimestampList.add(performance.getTimestamp());
-
-            contrastProcessCpuValueList.add(performance.getProcessCpuUseRatio());
-            contrastProcessMemoryValueList.add(performance.getProcessMemoryUseRatio());
         }
         contrastPerformanceList.clear();
         List<PerformanceData> performanceDataList = new ArrayList<>();
@@ -165,13 +153,6 @@ public class PerformanceService {
         performanceDataList
                 .add(new PerformanceData(RXBPS, new Data(new LineDataList(null, rxbpsValueList),
                         new LineDataList(null, contrastRxbpsValueList))));
-
-        performanceDataList
-                .add(new PerformanceData("process cpu", new Data(new LineDataList(null, processCpuValueList),
-                        new LineDataList(null, contrastProcessCpuValueList))));
-        performanceDataList
-                .add(new PerformanceData("process memory", new Data(new LineDataList(null, processMemoryValueList),
-                        new LineDataList(null, contrastProcessMemoryValueList))));
         return performanceDataList;
     }
 
@@ -213,44 +194,8 @@ public class PerformanceService {
             log.error("get net speed failed.",e);
         }
 
-        log.debug("begin sync process performance");
-        if (!constants.isMonitorEnabled())
-        {
-            return;
-        }
-        performance.setCpuUseRatio(BigDecimal.valueOf(0));
-        performance.setCpuUseRatio(BigDecimal.valueOf(0));
-
-        Ps ps = new Ps();
-        try {
-            long[] pids = sigar.getProcList();
-            for(long pid : pids){
-                List<String> list = ps.getInfo(sigar, pid);
-                String[] splitProcessName = list.get(8).split("/");
-                if (splitProcessName[splitProcessName.length - 1].equals("fisco-bcos")){
-                    ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
-                    performance.setProcessCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
-                    ProcMem procMem = sigar.getProcMem(pid);
-                    performance.setProcessMemoryUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
-                    performanceRepository.save(performance);
-                    log.debug("insert success =  " + performance.getId());
-                    return;
-                }
-//                    case 0 : info.setPid(list.get(0)); break;
-//                    case 1 : info.setUser(list.get(1)); break;
-//                    case 2 : info.setStartTime(list.get(2)); break;
-//                    case 3 : info.setMemSize(list.get(3)); break;
-//                    case 4 : info.setMemUse(list.get(4)); break;
-//                    case 5 : info.setMemhare(list.get(5)); break;
-//                    case 6 : info.setState(list.get(6)); break;
-//                    case 7 : info.setCpuTime(list.get(7)); break;
-//                    case 8 : info.setName(list.get(8)); break;
-            }
-            log.debug("insert error, can not find process");
-            return;
-        } catch (SigarException e) {
-            log.error("get process performance failed.",e);
-        }
+        performanceRepository.save(performance);
+        log.debug("insert success =  " + performance.getId());
     }
 
     /**
@@ -417,6 +362,46 @@ public class PerformanceService {
         return newPerformanceList;
     }
 
+    public List<ProcessInfo> getProcessPerformanceRatio() {
+        Ps ps = new Ps();
+        List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
+        ProcessInfo fisco = new ProcessInfo();
+        try {
+            long[] pids = sigar.getProcList();
+            for(long pid : pids){
+                List<String> list = ps.getInfo(sigar, pid);
+                ProcessInfo info = new ProcessInfo();
+                for(int i = 0; i <= list.size(); i++){
+                    switch(i){
+                        case 0 : info.setPid(list.get(0)); break;
+                        case 1 : info.setUser(list.get(1)); break;
+                        case 2 : info.setStartTime(list.get(2)); break;
+                        case 3 : info.setMemSize(list.get(3)); break;
+                        case 4 : info.setMemUse(list.get(4)); break;
+                        case 5 : info.setMemhare(list.get(5)); break;
+                        case 6 : info.setState(list.get(6)); break;
+                        case 7 : info.setCpuTime(list.get(7)); break;
+                        case 8 : info.setName(list.get(8)); break;
+                    }
+                }
+                String[] splitProcessName = list.get(8).split("/");
+                if (splitProcessName[splitProcessName.length - 1].equals("fisco-bcos")){
+                    fisco.setPid("0");
+                    ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
+                    fisco.setUser(String.valueOf(procCpu.getPercent()));
+                    ProcMem procMem = sigar.getProcMem(pid);
+                    fisco.setState(String.valueOf(procMem.getSize()));
+                    fisco.setStartTime(String.valueOf(sigar.getMem().getTotal()));
+                    fisco.setName("fisco-bcos");
+                    processInfos.add(fisco);
+                }
+                processInfos.add(info);
+            }
+        } catch (SigarException e) {
+            e.printStackTrace();
+        }
+        return processInfos;
+    }
 }
 
 
