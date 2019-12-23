@@ -123,7 +123,7 @@ public class PerformanceService {
             rxbpsValueList.add(performance.getRxbps());
             txbpsValueList.add(performance.getTxbps());
 
-            processCpuValueList.add(performance.getCpuUseRatio());
+            processCpuValueList.add(performance.getProcessCpuUseRatio());
             processMemoryValueList.add(performance.getProcessMemoryUseRatio());
         }
         performanceList.clear();
@@ -145,7 +145,7 @@ public class PerformanceService {
             contrastTxbpsValueList.add(performance.getTxbps());
             contrastTimestampList.add(performance.getTimestamp());
 
-            contrastProcessCpuValueList.add(performance.getCpuUseRatio());
+            contrastProcessCpuValueList.add(performance.getProcessCpuUseRatio());
             contrastProcessMemoryValueList.add(performance.getProcessMemoryUseRatio());
         }
         contrastPerformanceList.clear();
@@ -229,9 +229,9 @@ public class PerformanceService {
                 String[] splitProcessName = list.get(8).split("/");
                 if (splitProcessName[splitProcessName.length - 1].equals("fisco-bcos")){
                     ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
-                    performance.setCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
+                    performance.setProcessCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
                     ProcMem procMem = sigar.getProcMem(pid);
-                    performance.setMemoryUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
+                    performance.setProcessMemoryUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
                     break;
                 }
 //                    case 0 : info.setPid(list.get(0)); break;
