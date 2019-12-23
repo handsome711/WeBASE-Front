@@ -60,7 +60,7 @@ public class PerformanceService {
 
     /**
      * findByTime.
-     * 
+     *
      * @param startTime startTime
      * @param endTime endTime
      * @return
@@ -73,7 +73,7 @@ public class PerformanceService {
 
     /**
      * findContrastDataByTime.
-     * 
+     *
      * @param startTime startTime
      * @param endTime endTime
      * @param contrastStartTime contrastStartTime
@@ -112,6 +112,9 @@ public class PerformanceService {
         List<BigDecimal> diskValueList = new ArrayList<>();
         List<BigDecimal> rxbpsValueList = new ArrayList<>();
         List<BigDecimal> txbpsValueList = new ArrayList<>();
+
+        List<BigDecimal> processCpuValueList = new ArrayList<>();
+        List<BigDecimal> processMemoryValueList = new ArrayList<>();
         for (Performance performance : performanceList) {
             cpuValueList.add(performance.getCpuUseRatio());
             memoryValueList.add(performance.getMemoryUseRatio());
@@ -119,6 +122,9 @@ public class PerformanceService {
             timestampList.add(performance.getTimestamp());
             rxbpsValueList.add(performance.getRxbps());
             txbpsValueList.add(performance.getTxbps());
+
+            processCpuValueList.add(performance.getProcessCpuUseRatio());
+            processMemoryValueList.add(performance.getProcessMemoryUseRatio());
         }
         performanceList.clear();
 
@@ -128,6 +134,9 @@ public class PerformanceService {
         List<BigDecimal> contrastDiskValueList = new ArrayList<>();
         List<BigDecimal> contrastRxbpsValueList = new ArrayList<>();
         List<BigDecimal> contrastTxbpsValueList = new ArrayList<>();
+
+        List<BigDecimal> contrastProcessCpuValueList = new ArrayList<>();
+        List<BigDecimal> contrastProcessMemoryValueList = new ArrayList<>();
         for (Performance performance : contrastPerformanceList) {
             contrastCpuValueList.add(performance.getCpuUseRatio());
             contrastMemoryValueList.add(performance.getMemoryUseRatio());
@@ -135,6 +144,9 @@ public class PerformanceService {
             contrastRxbpsValueList.add(performance.getRxbps());
             contrastTxbpsValueList.add(performance.getTxbps());
             contrastTimestampList.add(performance.getTimestamp());
+
+            contrastProcessCpuValueList.add(performance.getProcessCpuUseRatio());
+            contrastProcessMemoryValueList.add(performance.getProcessMemoryUseRatio());
         }
         contrastPerformanceList.clear();
         List<PerformanceData> performanceDataList = new ArrayList<>();
@@ -153,6 +165,13 @@ public class PerformanceService {
         performanceDataList
                 .add(new PerformanceData(RXBPS, new Data(new LineDataList(null, rxbpsValueList),
                         new LineDataList(null, contrastRxbpsValueList))));
+
+        performanceDataList
+                .add(new PerformanceData("process cpu", new Data(new LineDataList(null, processCpuValueList),
+                        new LineDataList(null, contrastProcessCpuValueList))));
+        performanceDataList
+                .add(new PerformanceData("process memory", new Data(new LineDataList(null, processMemoryValueList),
+                        new LineDataList(null, contrastProcessMemoryValueList))));
         return performanceDataList;
     }
 
@@ -194,8 +213,44 @@ public class PerformanceService {
             log.error("get net speed failed.",e);
         }
 
-        performanceRepository.save(performance);
-        log.debug("insert success =  " + performance.getId());
+        log.debug("begin sync process performance");
+        if (!constants.isMonitorEnabled())
+        {
+            return;
+        }
+        performance.setCpuUseRatio(BigDecimal.valueOf(0));
+        performance.setCpuUseRatio(BigDecimal.valueOf(0));
+
+        Ps ps = new Ps();
+        try {
+            long[] pids = sigar.getProcList();
+            for(long pid : pids){
+                List<String> list = ps.getInfo(sigar, pid);
+                String[] splitProcessName = list.get(8).split("/");
+                if (splitProcessName[splitProcessName.length - 1].equals("fisco-bcos")){
+                    ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
+                    performance.setProcessCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
+                    ProcMem procMem = sigar.getProcMem(pid);
+                    performance.setProcessMemoryUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
+                    performanceRepository.save(performance);
+                    log.debug("insert success =  " + performance.getId());
+                    return;
+                }
+//                    case 0 : info.setPid(list.get(0)); break;
+//                    case 1 : info.setUser(list.get(1)); break;
+//                    case 2 : info.setStartTime(list.get(2)); break;
+//                    case 3 : info.setMemSize(list.get(3)); break;
+//                    case 4 : info.setMemUse(list.get(4)); break;
+//                    case 5 : info.setMemhare(list.get(5)); break;
+//                    case 6 : info.setState(list.get(6)); break;
+//                    case 7 : info.setCpuTime(list.get(7)); break;
+//                    case 8 : info.setName(list.get(8)); break;
+            }
+            log.debug("insert error, can not find process");
+            return;
+        } catch (SigarException e) {
+            log.error("get process performance failed.",e);
+        }
     }
 
     /**
@@ -230,7 +285,7 @@ public class PerformanceService {
 
     /**
      * getDiskRatio.
-     * 
+     *
      * @return
      */
     public BigDecimal getDiskRatio() throws SigarException {
@@ -241,7 +296,7 @@ public class PerformanceService {
 
     /**
      * getNetSpeed.
-     * 
+     *
      * @return
      */
     public Map<String, Long> getNetSpeed()
@@ -251,7 +306,7 @@ public class PerformanceService {
         String ip;
         try {
             addr = InetAddress.getLocalHost();
-             ip = addr.getHostAddress();
+            ip = addr.getHostAddress();
         } catch (Exception e ) {
             log.info("sigar get ip failed!");
             ip = "127.0.0.1";
@@ -286,7 +341,7 @@ public class PerformanceService {
 
     /**
      * getConfigInfo.
-     * 
+     *
      * @return
      */
     public Map<String, String> getConfigInfo() throws UnknownHostException, SigarException {
@@ -322,14 +377,14 @@ public class PerformanceService {
 
     /**
      * transferListByGap.
-     * 
+     *
      * @param arrayList arrayList
      * @param gap gap
      * @return
      */
     public List transferListByGap(List arrayList, int gap)  {
         if (gap == 0) {
-             throw new FrontException("gap cannot be 0");
+            throw new FrontException("gap cannot be 0");
         }
         List newPerformanceList = fillList(arrayList);
         List ilist = new ArrayList<>();
@@ -362,6 +417,7 @@ public class PerformanceService {
         return newPerformanceList;
     }
 
+
     public List<ProcessInfo> getProcessPerformanceRatio() {
         Ps ps = new Ps();
         List<ProcessInfo> processInfos = new ArrayList<ProcessInfo>();
@@ -392,6 +448,7 @@ public class PerformanceService {
                     ProcMem procMem = sigar.getProcMem(pid);
                     fisco.setState(String.valueOf(procMem.getSize()));
                     fisco.setStartTime(String.valueOf(sigar.getMem().getTotal()));
+                    fisco.setMemUse(String.valueOf(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal())));
                     fisco.setName("fisco-bcos");
                     processInfos.add(fisco);
                 }
@@ -402,6 +459,7 @@ public class PerformanceService {
         }
         return processInfos;
     }
+
 }
 
 
