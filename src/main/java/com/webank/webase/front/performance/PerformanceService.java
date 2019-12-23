@@ -231,7 +231,7 @@ public class PerformanceService {
                     ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
                     performance.setProcessCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
                     ProcMem procMem = sigar.getProcMem(pid);
-                    performance.setProcessMemoryUseRatio(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal()));
+                    performance.setProcessMemoryUseRatio(BigDecimal.valueOf(procMem.getSize() / (double)sigar.getMem().getTotal()));
                     performanceRepository.save(performance);
                     log.debug("insert success =  " + performance.getId());
                     return;
@@ -448,7 +448,7 @@ public class PerformanceService {
                     ProcMem procMem = sigar.getProcMem(pid);
                     fisco.setState(String.valueOf(procMem.getSize()));
                     fisco.setStartTime(String.valueOf(sigar.getMem().getTotal()));
-                    fisco.setMemUse(String.valueOf(BigDecimal.valueOf(procMem.getSize() / sigar.getMem().getTotal())));
+                    fisco.setMemUse(String.valueOf(BigDecimal.valueOf(procMem.getSize() / (double)sigar.getMem().getTotal())));
                     fisco.setName("fisco-bcos");
                     processInfos.add(fisco);
                 }
