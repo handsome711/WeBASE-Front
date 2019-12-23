@@ -229,7 +229,7 @@ public class PerformanceService {
                 String[] splitProcessName = list.get(8).split("/");
                 if (splitProcessName[splitProcessName.length - 1].equals("fisco-bcos")){
                     ProcCpu procCpu = sigar.getProcCpu(String.valueOf(pid));
-                    performance.setProcessCpuUseRatio(BigDecimal.valueOf(procCpu.getPercent()));
+                    performance.setProcessCpuUseRatio(BigDecimal.valueOf(100 * procCpu.getPercent()));
                     ProcMem procMem = sigar.getProcMem(pid);
                     performance.setProcessMemoryUseRatio(BigDecimal.valueOf(100 * procMem.getSize() / (double)sigar.getMem().getTotal()));
                     performanceRepository.save(performance);
