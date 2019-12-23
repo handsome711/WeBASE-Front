@@ -62,7 +62,8 @@ public class SituationService {
 
     public Situation findSituationDataNow(int groupId) {
         List<Situation> situations = situationRepository.findSituationDataNow(groupId);
-        return (situations != null)? situations.get(situations.size() - 1): new Situation();
+//        return (situations != null)? situations.get(situations.size() - 1): new Situation();
+        return (situations != null)? situations.get(0): new Situation();
     }
 
     private List<PerformanceData> transferToPerformanceData(List<Situation> situationList) {
