@@ -66,6 +66,10 @@ public class SituationService {
         return (situations != null)? situations.get(0): new Situation();
     }
 
+    public List<Situation> findSituationDataNow2(int groupId) {
+        return situationRepository.findSituationDataNow(groupId);
+    }
+
     private List<PerformanceData> transferToPerformanceData(List<Situation> situationList) {
         List<Long> timestampList = new ArrayList<>();
         List<BigDecimal> txPoolList = new ArrayList<>();

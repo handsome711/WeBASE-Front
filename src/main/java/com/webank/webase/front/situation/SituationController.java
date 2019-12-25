@@ -66,4 +66,11 @@ public class SituationController {
         Situation situation = situationService.findSituationDataNow(groupId);
         return situation;
     }
+
+    @ApiOperation(value = "查询实时态势图2", notes = "查询实时态势图2")
+    @GetMapping("/situationNow2")
+    public List<Situation> getChainSituationNow2(@RequestParam(defaultValue = "1") int groupId)   {
+        return situationService.findSituationDataNow2(groupId);
+    }
+
 }
