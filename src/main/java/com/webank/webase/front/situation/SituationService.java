@@ -168,14 +168,14 @@ public class SituationService {
     }
 
     /**
-     * scheduled task to delete Situation Info at 00:00:00 per week
+     * scheduled task to delete Situation Info at 00:00:00 per day
      */
     @Scheduled(cron = "0 0 0 * * ?")
     public void deleteSituationInfoPerWeek()   {
         log.debug("begin delete situation");
         Long currentTime = System.currentTimeMillis();
-        Long aWeekAgo = currentTime - 3600 * 24 * 7 * 1000;
-        int i = situationRepository.deleteTimeAgo(aWeekAgo);
+        Long aDayAgo = currentTime - 3600 * 24 * 1000;
+        int i = situationRepository.deleteTimeAgo(aDayAgo);
         log.debug("delete record count = " + i);
     }
 }
