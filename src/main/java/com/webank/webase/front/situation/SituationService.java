@@ -22,6 +22,7 @@ import com.webank.webase.front.performance.result.PerformanceData;
 import com.webank.webase.front.situation.entity.Situation;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TotalTransactionCount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -101,7 +102,7 @@ public class SituationService {
     }
 
     public void randValue(Situation situation) {
-        situation.setTxPool((int)(Math.random()*101));
+//        situation.setTxPool((int)(Math.random()*101));
         situation.setSealer((int)(Math.random()*101));
         situation.setConsensusEngineBlock((int)(Math.random()*101));
         situation.setConsensusEngineCommonView((int)(Math.random()*101));
@@ -151,7 +152,7 @@ public class SituationService {
      */
     @Scheduled(cron = "0/5 * * * * ?")
     public void syncSituationInfo() throws ExecutionException, InterruptedException {
-        log.debug("begin sync chain data");
+        log.debug("begin sync situation data");
 
         Long currentTime = System.currentTimeMillis();
         //to do  add  more group
@@ -159,7 +160,8 @@ public class SituationService {
             Situation situation = new Situation();
 
             randValue(situation);
-
+            CompletableFuture<TotalTransactionCount> totalTransactionCountFuture = entry.getValue().getTotalTransactionCount().sendAsync();
+            situation.setTxPool(totalTransactionCountFuture.get().getTotalTransactionCount().getTxSum());
             situation.setTimestamp(currentTime);
             situation.setGroupId(entry.getKey());
             situationRepository.save(situation);
