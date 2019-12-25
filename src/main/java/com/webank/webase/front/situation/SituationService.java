@@ -22,6 +22,7 @@ import com.webank.webase.front.performance.result.PerformanceData;
 import com.webank.webase.front.situation.entity.Situation;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.core.methods.response.PendingTxSize;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TotalTransactionCount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -160,8 +161,8 @@ public class SituationService {
             Situation situation = new Situation();
 
             randValue(situation);
-            CompletableFuture<TotalTransactionCount> totalTransactionCountFuture = entry.getValue().getTotalTransactionCount().sendAsync();
-            situation.setTxPool(totalTransactionCountFuture.get().getTotalTransactionCount().getTxSum());
+            CompletableFuture<PendingTxSize> pendingTxSizeFuture = entry.getValue().getPendingTxSize().sendAsync();
+            situation.setTxPool(pendingTxSizeFuture.get().getPendingTxSize());
             situation.setTimestamp(currentTime);
             situation.setGroupId(entry.getKey());
             situationRepository.save(situation);
