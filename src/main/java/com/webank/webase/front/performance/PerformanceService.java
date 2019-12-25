@@ -218,8 +218,8 @@ public class PerformanceService {
         {
             return;
         }
-        performance.setCpuUseRatio(BigDecimal.valueOf(0));
-        performance.setCpuUseRatio(BigDecimal.valueOf(0));
+        performance.setProcessCpuUseRatio(BigDecimal.valueOf(0));
+        performance.setProcessMemoryUseRatio(BigDecimal.valueOf(0));
 
         Ps ps = new Ps();
         try {
