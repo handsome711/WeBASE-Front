@@ -73,18 +73,18 @@ public class SituationService {
     private List<PerformanceData> transferToPerformanceData(List<Situation> situationList) {
         List<Long> timestampList = new ArrayList<>();
         List<BigDecimal> txPoolList = new ArrayList<>();
-//        List<BigDecimal> sealerList = new ArrayList<>();
+        List<BigDecimal> sealerList = new ArrayList<>();
         List<BigDecimal> consensusEngineBlockList = new ArrayList<>();
         List<BigDecimal> consensusEngineCommonViewList = new ArrayList<>();
-//        List<BigDecimal> blockChainList = new ArrayList<>();
-//        List<BigDecimal> blockVerifierList = new ArrayList<>();
+        List<BigDecimal> blockChainList = new ArrayList<>();
+        List<BigDecimal> blockVerifierList = new ArrayList<>();
         for (Situation situation : situationList) {
             txPoolList.add(new BigDecimal(situation.getTxPool()));
-//            sealerList.add(new BigDecimal(situation.getSealer()));
+            sealerList.add(new BigDecimal(situation.getSealer()));
             consensusEngineBlockList.add(new BigDecimal(situation.getConsensusEngineBlock()));
             consensusEngineCommonViewList.add(new BigDecimal(situation.getConsensusEngineCommonView()));
-//            blockChainList.add(new BigDecimal(situation.getBlockChain()));
-//            blockVerifierList.add(new BigDecimal(situation.getBlockVerifier()));
+            blockChainList.add(new BigDecimal(situation.getBlockChain()));
+            blockVerifierList.add(new BigDecimal(situation.getBlockVerifier()));
             
             timestampList.add(situation.getTimestamp());
         }
@@ -92,21 +92,21 @@ public class SituationService {
 
         List<PerformanceData> performanceDataList = new ArrayList<>();
         performanceDataList.add(new PerformanceData("txPool", new Data(new LineDataList(timestampList, txPoolList), new LineDataList(timestampList, txPoolList))));
-//        performanceDataList.add(new PerformanceData("sealer", new Data(new LineDataList(null, sealerList), new LineDataList(null, sealerList))));
+        performanceDataList.add(new PerformanceData("sealer", new Data(new LineDataList(null, sealerList), new LineDataList(null, sealerList))));
         performanceDataList.add(new PerformanceData("consensusEngineBlock", new Data(new LineDataList(null, consensusEngineBlockList), new LineDataList(null, consensusEngineBlockList))));
         performanceDataList.add(new PerformanceData("consensusEngineCommonView", new Data(new LineDataList(null, consensusEngineCommonViewList), new LineDataList(null, consensusEngineCommonViewList))));
-//        performanceDataList.add(new PerformanceData("blockChain", new Data(new LineDataList(null, blockChainList), new LineDataList(null, blockChainList))));
-//        performanceDataList.add(new PerformanceData("blockVerifier", new Data(new LineDataList(null, blockVerifierList), new LineDataList(null, blockVerifierList))));
+        performanceDataList.add(new PerformanceData("blockChain", new Data(new LineDataList(null, blockChainList), new LineDataList(null, blockChainList))));
+        performanceDataList.add(new PerformanceData("blockVerifier", new Data(new LineDataList(null, blockVerifierList), new LineDataList(null, blockVerifierList))));
         return performanceDataList;
     }
 
     public void randValue(Situation situation) {
         situation.setTxPool((int)(Math.random()*101));
-//        situation.setSealer((int)(Math.random()*101));
+        situation.setSealer((int)(Math.random()*101));
         situation.setConsensusEngineBlock((int)(Math.random()*101));
         situation.setConsensusEngineCommonView((int)(Math.random()*101));
-//        situation.setBlockChain((int)(Math.random()*101));
-//        situation.setBlockVerifier((int)(Math.random()*101));
+        situation.setBlockChain((int)(Math.random()*101));
+        situation.setBlockVerifier((int)(Math.random()*101));
     }
 
     public List transferListByGap(List arrayList, int gap)  {

@@ -34,11 +34,11 @@ public class Situation {
     private Long id;
 
     private int txPool;
-//    private int sealer;
+    private int sealer;
     private int consensusEngineBlock;
     private int consensusEngineCommonView;
-//    private int blockVerifier;
-//    private int blockChain;
+    private int blockVerifier;
+    private int blockChain;
 
     private int groupId=1;
     private Long timestamp;
