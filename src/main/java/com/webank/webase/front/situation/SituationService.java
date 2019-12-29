@@ -15,6 +15,7 @@
  */
 package com.webank.webase.front.situation;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.front.base.exception.FrontException;
 import com.webank.webase.front.performance.result.Data;
@@ -228,13 +229,14 @@ public class SituationService {
             InputStream inStream = httpResponse.getEntity().getContent();
             BufferedReader reader = new BufferedReader(new InputStreamReader(
                     inStream, "utf-8"));
-            StringBuilder strber = new StringBuilder();
+//            StringBuilder strber = new StringBuilder();
             String line = null;
             while ((line = reader.readLine()) != null)
-                strber.append(line + "\n");
+                result += line;
+//                strber.append(line + "\n");
             inStream.close();
 
-            result = strber.toString();
+//            result = strber.toString();
             System.out.println(result);
             a[2] = result;
 
@@ -250,6 +252,14 @@ public class SituationService {
             System.out.println("请求异常");
             throw new RuntimeException(e);
         }
+        JSONObject testJson = JSON.parseObject(result);
+        a[3] = testJson.toString();
+        a[4] = testJson.getString("result");
+        JSONObject testJson2 = JSON.parseObject(testJson.getString("result"));
+        a[5] = testJson2.toString();
+        a[6] = testJson.getString("executingNumber");
+        a[7] = testJson.getString("isExecuting");
+
 
         return a;
     }
