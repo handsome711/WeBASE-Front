@@ -73,4 +73,9 @@ public class SituationController {
         return situationService.findSituationDataNow2(groupId);
     }
 
+    @ApiOperation(value = "查询实时态势图2", notes = "查询实时态势图2")
+    @GetMapping("/test")
+    public String test(@RequestParam(defaultValue = "1") int groupId)   {
+        return situationService.test();
+    }
 }
