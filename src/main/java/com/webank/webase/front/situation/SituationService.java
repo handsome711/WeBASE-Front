@@ -194,7 +194,8 @@ public class SituationService {
         int i = situationRepository.deleteTimeAgo(aDayAgo);
         log.debug("delete record count = " + i);
     }
-    public String[] test() {
+
+    public Integer getBlockVerifierStatus() {
         JSONObject json = new JSONObject();
         //        "jsonrpc":"2.0","method":"getBlockVerifierStatus","params":[1],"id":1
         json.put("jsonrpc", "2.0");
@@ -204,68 +205,69 @@ public class SituationService {
         json.put("id",1);
 
         String URL = "http://127.0.0.1:8545";
-        return sendPost(json, URL);
+
+        JSONObject response = sendPost(json, URL);
+        JSONObject result = JSON.parseObject(response.getString("result"));
+        String executingNumber = result.getString("executingNumber");
+
+        return Integer.parseInt(executingNumber.substring(2, executingNumber.length()), 16);
     }
 
-    public static String[] sendPost(JSONObject json, String URL) {
+    public String[] getConsensusStatus() {
+//    public Integer getConsensusStatus() {
+        JSONObject json = new JSONObject();
+        //        "jsonrpc":"2.0","method":"getBlockVerifierStatus","params":[1],"id":1
+        json.put("jsonrpc", "2.0");
+        json.put("method","getConsensusStatus");
+        int[] arr = {1};
+        json.put("params", arr);
+        json.put("id",1);
+
+        String URL = "http://127.0.0.1:8545";
+
+        JSONObject response = sendPost(json, URL);
+        JSONObject result = JSON.parseObject(response.getJSONArray("result").get(0).toString());
+        String isWorking = result.getString("isWorking");
+
+        String a [] = new String[10];
+        a[0] = response.toString();
+        a[1] = response.getJSONArray("result").toJSONString();
+        a[2] = response.getJSONArray("result").get(0).toString();
+        a[3] = result.toString();
+        a[4] = isWorking;
+        return a;
+//        return isWorking.equals("true")? 100: 0;
+    }
+
+    public static JSONObject sendPost(JSONObject json, String URL) {
 
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(URL);
         post.setHeader("Content-Type", "application/json");
         post.addHeader("Authorization", "Basic YWRtaW46");
         String result = "";
-        String a [] = new String[10];
-        a[0] = json.toString();
-        a[1] = URL;
         try {
             StringEntity s = new StringEntity(json.toString(), "utf-8");
             s.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE,
                     "application/json"));
             post.setEntity(s);
-            // 发送请求
             HttpResponse httpResponse = client.execute(post);
 
-            // 获取响应输入流
             InputStream inStream = httpResponse.getEntity().getContent();
             BufferedReader reader = new BufferedReader(new InputStreamReader(
                     inStream, "utf-8"));
-//            StringBuilder strber = new StringBuilder();
             String line = null;
             while ((line = reader.readLine()) != null)
                 result += line;
-//                strber.append(line + "\n");
             inStream.close();
 
-//            result = strber.toString();
             System.out.println(result);
-            a[2] = result;
-
-            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                System.out.println("请求服务器成功，做相应处理");
-
-            } else {
-                System.out.println("请求服务端失败");
-            }
-
 
         } catch (Exception e) {
             System.out.println("请求异常");
             throw new RuntimeException(e);
         }
-        JSONObject testJson = JSON.parseObject(result);
-        a[3] = testJson.toString();
-        a[4] = testJson.getString("result");
-        JSONObject testJson2 = JSON.parseObject(testJson.getString("result"));
-        a[5] = testJson2.toString();
-        a[6] = testJson2.getString("executingNumber");
-        a[7] = testJson2.getString("isExecuting");
 
-
-        Integer i1 = Integer.parseInt(a[6].substring(2, a[6].length()), 16);
-        Integer i2 = Integer.parseInt(a[7].substring(2, a[7].length()), 16);
-
-        a[8] = i1.toString();
-        a[9] = i2.toString();
-        return a;
+        return JSON.parseObject(result);
     }
 }
