@@ -116,7 +116,7 @@ public class SituationService {
     }
 
     public void randValue(Situation situation) {
-//        situation.setTxPool((int)(Math.random()*101));
+        situation.setTxPool((int)(Math.random()*101));
         situation.setSealer((int)(Math.random()*101));
         situation.setConsensusEngineBlock((int)(Math.random()*101));
         situation.setConsensusEngineCommonView((int)(Math.random()*101));
@@ -175,6 +175,9 @@ public class SituationService {
 
             randValue(situation);
             CompletableFuture<PendingTxSize> pendingTxSizeFuture = entry.getValue().getPendingTxSize().sendAsync();
+
+            situation.setConsensusEngineBlock(getBlockVerifierStatus());
+            situation.setConsensusEngineCommonView(getConsensusStatus());
             situation.setTxPool(pendingTxSizeFuture.get().getPendingTxSize());
             situation.setTimestamp(currentTime);
             situation.setGroupId(entry.getKey());
@@ -213,10 +216,9 @@ public class SituationService {
         return Integer.parseInt(executingNumber.substring(2, executingNumber.length()), 16);
     }
 
-    public String[] getConsensusStatus() {
-//    public Integer getConsensusStatus() {
+    public Integer getConsensusStatus() {
         JSONObject json = new JSONObject();
-        //        "jsonrpc":"2.0","method":"getBlockVerifierStatus","params":[1],"id":1
+        //        "jsonrpc":"2.0","method":"getConsensusStatus","params":[1],"id":1
         json.put("jsonrpc", "2.0");
         json.put("method","getConsensusStatus");
         int[] arr = {1};
@@ -228,19 +230,10 @@ public class SituationService {
         JSONObject response = sendPost(json, URL);
         JSONObject result = JSON.parseObject(response.getJSONArray("result").get(0).toString());
         String isWorking = result.getString("isWorking");
-
-        String a [] = new String[10];
-        a[0] = response.toString();
-        a[1] = response.getJSONArray("result").toJSONString();
-        a[2] = response.getJSONArray("result").get(0).toString();
-        a[3] = result.toString();
-        a[4] = isWorking;
-        return a;
-//        return isWorking.equals("true")? 100: 0;
+        return isWorking.equals("true")? 100: 0;
     }
 
     public static JSONObject sendPost(JSONObject json, String URL) {
-
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(URL);
         post.setHeader("Content-Type", "application/json");
