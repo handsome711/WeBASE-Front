@@ -197,7 +197,7 @@ public class SituationService {
         JSONObject json = new JSONObject();
         //        "jsonrpc":"2.0","method":"getBlockVerifierStatus","params":[1],"id":1
         json.put("jsonrpc", "2.0");
-        json.put("method"," getBlockVerifierStatus");
+        json.put("method","getBlockVerifierStatus");
         int[] arr = {1};
         json.put("params", arr);
         json.put("id",1);
