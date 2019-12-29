@@ -257,10 +257,14 @@ public class SituationService {
         a[4] = testJson.getString("result");
         JSONObject testJson2 = JSON.parseObject(testJson.getString("result"));
         a[5] = testJson2.toString();
-        a[6] = testJson.getString("executingNumber");
-        a[7] = testJson.getString("isExecuting");
+        a[6] = testJson2.getString("executingNumber");
+        a[7] = testJson2.getString("isExecuting");
 
+        Integer i1 = Integer.valueOf(testJson2.getString("executingNumber"));
+        Integer i2 = Integer.valueOf(testJson2.getString("isExecuting"));
 
+        a[8] = i1.toString();
+        a[9] = i2.toString();
         return a;
     }
 }
