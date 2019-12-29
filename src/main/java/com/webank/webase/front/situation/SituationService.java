@@ -116,7 +116,7 @@ public class SituationService {
     }
 
     public void randValue(Situation situation) {
-        situation.setTxPool((int)(Math.random()*101));
+//        situation.setTxPool((int)(Math.random()*101));
         situation.setSealer((int)(Math.random()*101));
         situation.setConsensusEngineBlock((int)(Math.random()*101));
         situation.setConsensusEngineCommonView((int)(Math.random()*101));
