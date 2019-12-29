@@ -193,7 +193,7 @@ public class SituationService {
         int i = situationRepository.deleteTimeAgo(aDayAgo);
         log.debug("delete record count = " + i);
     }
-    public String test() {
+    public String[] test() {
         JSONObject json = new JSONObject();
         //        "jsonrpc":"2.0","method":"getBlockVerifierStatus","params":[1],"id":1
         json.put("jsonrpc", "2.0");
@@ -206,13 +206,16 @@ public class SituationService {
         return sendPost(json, URL);
     }
 
-    public static String sendPost(JSONObject json, String URL) {
+    public static String[] sendPost(JSONObject json, String URL) {
 
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(URL);
         post.setHeader("Content-Type", "application/json");
         post.addHeader("Authorization", "Basic YWRtaW46");
         String result = "";
+        String a [] = new String[10];
+        a[0] = json.toString();
+        a[1] = URL;
         try {
             StringEntity s = new StringEntity(json.toString(), "utf-8");
             s.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE,
@@ -233,6 +236,7 @@ public class SituationService {
 
             result = strber.toString();
             System.out.println(result);
+            a[2] = result;
 
             if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 System.out.println("请求服务器成功，做相应处理");
@@ -247,6 +251,6 @@ public class SituationService {
             throw new RuntimeException(e);
         }
 
-        return result;
+        return a;
     }
 }

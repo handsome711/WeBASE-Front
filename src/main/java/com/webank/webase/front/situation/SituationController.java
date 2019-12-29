@@ -75,7 +75,7 @@ public class SituationController {
 
     @ApiOperation(value = "查询实时态势图2", notes = "查询实时态势图2")
     @GetMapping("/test")
-    public String test(@RequestParam(defaultValue = "1") int groupId)   {
+    public String[] test(@RequestParam(defaultValue = "1") int groupId)   {
         return situationService.test();
     }
 }
