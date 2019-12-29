@@ -260,8 +260,9 @@ public class SituationService {
         a[6] = testJson2.getString("executingNumber");
         a[7] = testJson2.getString("isExecuting");
 
-        Integer i1 = Integer.valueOf(testJson2.getString("executingNumber"));
-        Integer i2 = Integer.valueOf(testJson2.getString("isExecuting"));
+
+        Integer i1 = Integer.parseInt(a[6].substring(2, a[6].length()), 16);
+        Integer i2 = Integer.parseInt(a[7].substring(2, a[7].length()), 16);
 
         a[8] = i1.toString();
         a[9] = i2.toString();
