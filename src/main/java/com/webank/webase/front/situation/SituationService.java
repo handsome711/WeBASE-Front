@@ -184,7 +184,7 @@ public class SituationService {
             String pendingTxSizePercent = df.format(pendingTxSizeFuture.get().getPendingTxSize().intValue() / 150000.0);
 
             situation.setTxPool(pendingTxSizeFuture.get().getPendingTxSize().intValue() / 150000.0);
-
+            situation.setBlockVerifier(pendingTxSizeFuture.get().getPendingTxSize().intValue());
             situation.setTimestamp(currentTime);
             situation.setGroupId(entry.getKey());
             situationRepository.save(situation);
