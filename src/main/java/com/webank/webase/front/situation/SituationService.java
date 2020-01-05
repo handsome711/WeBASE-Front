@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -178,7 +179,11 @@ public class SituationService {
 
             situation.setConsensusEngineBlock(getBlockVerifierStatus());
             situation.setConsensusEngineCommonView(getConsensusStatus());
-            situation.setTxPool(pendingTxSizeFuture.get().getPendingTxSize());
+
+            double pendingTxSizePercent = pendingTxSizeFuture.get().getPendingTxSize().intValue() / 150000.0;
+            DecimalFormat df = new DecimalFormat("#.00");
+            situation.setTxPool(df.format(pendingTxSizePercent));
+
             situation.setTimestamp(currentTime);
             situation.setGroupId(entry.getKey());
             situationRepository.save(situation);
