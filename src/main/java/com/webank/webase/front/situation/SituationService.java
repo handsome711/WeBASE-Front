@@ -180,9 +180,10 @@ public class SituationService {
             situation.setConsensusEngineBlock(getBlockVerifierStatus());
             situation.setConsensusEngineCommonView(getConsensusStatus());
 
-            double pendingTxSizePercent = pendingTxSizeFuture.get().getPendingTxSize().intValue() / 150000.0;
             DecimalFormat df = new DecimalFormat("#.00");
-            situation.setTxPool(df.format(pendingTxSizePercent));
+            String pendingTxSizePercent = df.format(pendingTxSizeFuture.get().getPendingTxSize().intValue() / 150000.0);
+
+            situation.setTxPool(pendingTxSizeFuture.get().getPendingTxSize().intValue() / 150000.0);
 
             situation.setTimestamp(currentTime);
             situation.setGroupId(entry.getKey());

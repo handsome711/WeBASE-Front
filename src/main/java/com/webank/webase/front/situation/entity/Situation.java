@@ -34,7 +34,7 @@ public class Situation {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
-    private String txPool;
+    private double txPool;
     private int sealer;
     private int consensusEngineBlock;
     private int consensusEngineCommonView;
